@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управляющий магазином</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .navbar {
+            background: linear-gradient(90deg, #2c3e50, #3498db);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .back-btn, .logout-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .back-btn:hover, .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        .card-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-clear {
+            background: #cc2e43;
+            color: white;
+        }
+        .btn-clear:hover {
+            background: #ae273d;
+        }
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #d68910;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-new { background: #d4edda; color: #155724; }
+        .status-send { background: #dbdbdb; color: #464646; }
+        .status-work { background: #fff3cd; color: #856404; }
+        .status-done { background: #d1ecf1; color: #0c5460; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        .task-counter {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3498db;
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-store"></i>
+            Управляющий магазином
+        </div>
+        <div class="user-info">
+            <span id="currentUser">Гость</span>
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-home"></i> Главная
+            </button>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="container">
+        <div class="dashboard">
+            <!-- Карточка статистики -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Статистика заданий</div>
+                </div>
+                <div class="task-counter" id="taskCount">0</div>
+                <p style="text-align: center; color: #7f8c8d;">Всего заданий</p>
+                <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 15px; margin-top: 20px;">
+                    <div style="text-align: center;">
+                        <div class="task-counter" style="font-size: 1.8rem; color: #2ecc71;" id="newCount">0</div>
+                        <p style="font-size: 0.9rem;">Новые</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="task-counter" style="font-size: 1.8rem; color: #777777;" id="sendCount">0</div>
+                        <p style="font-size: 0.9rem;">Отправлено</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="task-counter" style="font-size: 1.8rem; color: #f39c12;" id="workCount">0</div>
+                        <p style="font-size: 0.9rem;">В работе</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка создания задания -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Создать новое задание</div>
+                    <i class="fas fa-tasks" style="font-size: 2rem; color: #3498db;"></i>
+                </div>
+                <div class="form-group">
+                    <label for="taskName">Наименование работ:</label>
+                    <input type="text" id="taskName" placeholder="Например, ремонт кондиционера">
+                </div>
+                <div class="form-group">
+                    <label for="taskDate">Дата выполнения:</label>
+                    <input type="date" id="taskDate">
+                </div>
+                <div class="form-group">
+                    <label for="taskNotes">Пожелания к исполнителям:</label>
+                    <textarea id="taskNotes" rows="3" placeholder="Укажите требования к специалистам"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="createTask()" style="width: 100%;">
+                    <i class="fas fa-plus-circle"></i> Создать задание
+                </button>
+            </div>
+        </div>
+
+        <!-- Список заданий -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Мои задания</div>
+                <button class="btn btn-clear" onclick="ClearTasks()">
+                    <i class="fas fa-sync-alt"></i> Удалить всё
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="tasksTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Наименование работ</th>
+                            <th>Дата выполнения</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody">
+                        <!-- Задания будут добавляться здесь -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- История статусов -->
+        <div class="card" id="historyCard" style="display: none;">
+            <div class="card-header">
+                <div class="card-title">История статусов</div>
+                <button class="btn btn-warning" onclick="closeHistory()">
+                    <i class="fas fa-times"></i> Закрыть
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Дата и время</th>
+                            <th>Статус</th>
+                            <th>Пользователь</th>
+                            <th>Комментарий</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- История будет добавляться здесь -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Редактировать задание</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editTaskName">Наименование работ:</label>
+                    <input type="text" id="editTaskName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDate">Дата выполнения:</label>
+                    <input type="date" id="editTaskDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskNotes">Пожелания к исполнителям:</label>
+                    <textarea id="editTaskNotes" rows="3"></textarea>
+                </div>
+                <input type="hidden" id="editTaskId">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-save"></i> Сохранить изменения
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация данных
+        function initData() {
+            if (!localStorage.getItem('tasks')) {
+                const sampleTasks = [
+                    {
+                        id: 1,
+                        name: "Ремонт кондиционера",
+                        date: "2023-10-15",
+                        notes: "Требуется специалист с опытом работы с системами вентиляции",
+                        status: "new",
+                        store: "ТЦ Глобус",
+                        createdBy: "Управляющий магазином",
+                        history: [
+                            {
+                                date: "2023-10-10 14:30",
+                                status: "new",
+                                user: "Иванов А.А.",
+                                comment: "Задание создано"
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: "Замена освещения",
+                        date: "2023-10-20",
+                        notes: "Необходимо заменить 15 светильников",
+                        status: "work",
+                        store: "ТЦ Глобус",
+                        createdBy: "Управляющий магазином",
+                        history: [
+                            {
+                                date: "2023-10-10 09:00",
+                                status: "new",
+                                user: "Иванов А.А.",
+                                comment: "Задание создано"
+                            },
+                            {
+                                date: "2023-10-11 11:30",
+                                status: "work",
+                                user: "Петров Б.Б.",
+                                comment: "Отправлено в офис"
+                            }
+                        ]
+                    }
+                ];
+                localStorage.setItem('tasks', JSON.stringify(sampleTasks));
+            }
+            
+            // Устанавливаем текущую дату по умолчанию
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('taskDate').value = today;
+        }
+
+        // Показываем уведомление
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? '#2ecc71' : 
+                                           type === 'error' ? '#e74c3c' : '#3498db';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Создание нового задания
+        function createTask() {
+            const name = document.getElementById('taskName').value;
+            const date = document.getElementById('taskDate').value;
+            const notes = document.getElementById('taskNotes').value;
+            
+            if (!name || !date) {
+                showNotification('Заполните обязательные поля', 'error');
+                return;
+            }
+            
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const newId = tasks.length
+            
+            const newTask = {
+                id: newId,
+                name: name,
+                date: date,
+                notes: notes,
+                status: 'new',
+                store: 'ТЦ Глобус',
+                createdBy: localStorage.getItem('currentUser') || 'Управляющий магазином',
+                history: [{
+                    date: new Date().toLocaleString('ru-RU'),
+                    status: 'new',
+                    user: localStorage.getItem('currentUser') || 'Управляющий магазином',
+                    comment: 'Задание создано'
+                }]
+            };
+            
+            tasks.push(newTask);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // Очищаем форму
+            document.getElementById('taskName').value = '';
+            document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('taskNotes').value = '';
+            
+            showNotification('Задание успешно создано!');
+            loadTasks();
+        }
+
+        // Загрузка заданий
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            
+            const tableBody = document.getElementById('tasksTableBody');
+            tableBody.innerHTML = '';
+            
+            let newCount = 0;
+            let workCount = 0;
+            let sendCount=0;
+            let doneCount = 0;
+            
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                task.id=newCount+workCount+doneCount+sendCount
+                // Подсчет статусов
+                if (task.status === 'new') newCount++;
+                if (task.status === 'send') sendCount++;
+                if (task.status === 'work') workCount++;
+                if (task.status === 'done') doneCount++;
+                
+                // Определяем класс статуса
+                let statusClass = '';
+                let statusText = '';
+                switch(task.status) {
+                    case 'new': statusClass = 'status-new'; statusText = 'Новый'; break;
+                    case 'send': statusClass = 'status-send'; statusText = 'Отправлен'; break;
+                    case 'work': statusClass = 'status-work'; statusText = 'В работе'; break;
+                    case 'done': statusClass = 'status-done'; statusText = 'Выполнен'; break;
+                    case 'cancelled': statusClass = 'status-cancelled'; statusText = 'Отменен'; break;
+                }
+                
+                row.innerHTML = `
+                    <td>#${task.id}</td>
+                    <td>${task.name}</td>
+                    <td>${task.date}</td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            ${task.status === 'new' ? `
+                                <button class="btn btn-warning btn-sm" onclick="editTask(${task.id})">
+                                    <i class="fas fa-edit"></i> Редактировать
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="sendToOffice(${task.id})">
+                                    <i class="fas fa-paper-plane"></i> Отправить в офис
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-primary btn-sm" onclick="viewTaskHistory(${task.id})">
+                                <i class="fas fa-history"></i> История
+                            </button>
+                            <button class="btn btn-clear" onclick="RemoveTask(${task.id})">
+                                <i class="fas fa-history"></i> Удалить
+                            </button>
+                            
+
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Обновляем счетчики
+            document.getElementById('taskCount').textContent = tasks.length;
+            document.getElementById('newCount').textContent = newCount;
+            document.getElementById('workCount').textContent = workCount;
+            document.getElementById('sendCount').textContent = sendCount;
+        }
+        function ClearTasks(){
+            var tasks=[]
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks()
+        }
+        function RemoveTask(taskId){
+            tasks=JSON.parse(localStorage.getItem('tasks') || '[]')
+            tasks.splice(taskId,1)
+            console.log(taskId)
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks()
+        }
+        // Отправка задания в офис
+        function sendToOffice(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            
+            if (taskIndex !== -1) {
+                tasks[taskIndex].status = 'send';
+                tasks[taskIndex].history.push({
+                    date: new Date().toLocaleString('ru-RU'),
+                    status: 'send',
+                    user: localStorage.getItem('currentUser') || 'Управляющий магазином',
+                    comment: 'Отправлено в офис'
+                });
+                
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                showNotification('Задание отправлено в офис!');
+                loadTasks();
+            }
+        }
+
+        // Редактирование задания
+        function editTask(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (task) {
+                document.getElementById('editTaskId').value = taskId;
+                document.getElementById('editTaskName').value = task.name;
+                document.getElementById('editTaskDate').value = task.date;
+                document.getElementById('editTaskNotes').value = task.notes || '';
+                
+                document.getElementById('editModal').style.display = 'flex';
+            }
+        }
+
+        // Закрытие модального окна
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Сохранение изменений
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const taskId = parseInt(document.getElementById('editTaskId').value);
+            const name = document.getElementById('editTaskName').value;
+            const date = document.getElementById('editTaskDate').value;
+            const notes = document.getElementById('editTaskNotes').value;
+            
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            
+            if (taskIndex !== -1) {
+                tasks[taskIndex].name = name;
+                tasks[taskIndex].date = date;
+                tasks[taskIndex].notes = notes;
+                
+                tasks[taskIndex].history.push({
+                    date: new Date().toLocaleString('ru-RU'),
+                    status: tasks[taskIndex].status,
+                    user: localStorage.getItem('currentUser') || 'Управляющий магазином',
+                    comment: 'Задание отредактировано'
+                });
+                
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                showNotification('Изменения сохранены!');
+                closeModal();
+                loadTasks();
+            }
+        });
+
+        // Просмотр истории задания
+        function viewTaskHistory(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (task && task.history) {
+                const tableBody = document.getElementById('historyTableBody');
+                tableBody.innerHTML = '';
+                
+                task.history.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.date}</td>
+                        <td>${getStatusText(record.status)}</td>
+                        <td>${record.user}</td>
+                        <td>${record.comment}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                document.getElementById('historyCard').style.display = 'block';
+                window.scrollTo(0, document.getElementById('historyCard').offsetTop);
+            }
+        }
+
+        // Закрытие истории
+        function closeHistory() {
+            document.getElementById('historyCard').style.display = 'none';
+        }
+
+        // Получение текста статуса
+        function getStatusText(status) {
+            switch(status) {
+                case 'new': return 'Новый';
+                case 'send': return 'Отправлен';
+                case 'work': return 'В работе';
+                case 'done': return 'Выполнен';
+                case 'cancelled': return 'Отменен';
+                default: return status;
+            }
+        }
+
+        // Обновление заданий
+        function refreshTasks() {
+            loadTasks();
+            showNotification('Все задачи удалены');
+        }
+
+        // Выход из системы
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = localStorage.getItem('currentUser') || 'Управляющий магазином';
+            document.getElementById('currentUser').textContent = currentUser;
+            
+            initData();
+            loadTasks();
+            
+            // Закрытие модального окна при клике вне его
+            document.getElementById('editModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
