@@ -173,6 +173,7 @@
             display: inline-block;
         }
         .status-new { background: #d4edda; color: #155724; }
+        .status-send {background: #5e5e5e; color: #c5c5c5}
         .status-work { background: #fff3cd; color: #856404; }
         .status-done { background: #d1ecf1; color: #0c5460; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
@@ -525,6 +526,7 @@
                 let statusText = '';
                 switch(task.status) {
                     case 'new': statusClass = 'status-new'; statusText = 'Новый'; break;
+                    case 'send': statusClass = 'status-send'; statusText='Отправлен'; break;
                     case 'work': statusClass = 'status-work'; statusText = 'В работе'; break;
                     case 'done': statusClass = 'status-done'; statusText = 'Выполнен'; break;
                     case 'cancelled': statusClass = 'status-cancelled'; statusText = 'Отменен'; break;
@@ -583,15 +585,15 @@
             const taskIndex = tasks.findIndex(t => t.id === taskId);
             
             if (taskIndex !== -1) {
-                tasks[taskIndex].status = 'work';
+                tasks[taskIndex].status = 'send';
                 tasks[taskIndex].history.push({
                     date: new Date().toLocaleString('ru-RU'),
-                    status: 'work',
+                    status: 'send',
                     user: localStorage.getItem('currentUser') || 'Управляющий магазином',
                     comment: 'Отправлено в офис'
                 });
-                
                 localStorage.setItem('tasks', JSON.stringify(tasks));
+                tasks[taskIndex].status = 'send';
                 showNotification('Задание отправлено в офис!');
                 loadTasks();
             }
@@ -682,6 +684,7 @@
         function getStatusText(status) {
             switch(status) {
                 case 'new': return 'Новый';
+                case 'send': return 'Отправлен';
                 case 'work': return 'В работе';
                 case 'done': return 'Выполнен';
                 case 'cancelled': return 'Отменен';
