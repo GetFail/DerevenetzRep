@@ -515,7 +515,7 @@
             
             tasks.forEach(task => {
                 const row = document.createElement('tr');
-                task.id=newCount+workCount+doneCount
+                task.id=tasks.length-1
                 // Подсчет статусов
                 if (task.status === 'new') newCount++;
                 if (task.status === 'work') workCount++;
@@ -583,7 +583,7 @@
         function sendToOffice(taskId) {
             const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
             const taskIndex = tasks.findIndex(t => t.id === taskId);
-            
+            console.log(tasks)
             if (taskIndex !== -1) {
                 tasks[taskIndex].status = 'send';
                 tasks[taskIndex].history.push({

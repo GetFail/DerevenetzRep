@@ -173,6 +173,7 @@
             display: inline-block;
         }
         .status-new { background: #d4edda; color: #155724; }
+        .status-send {background: #5e5e5e; color: #c5c5c5}
         .status-work { background: #fff3cd; color: #856404; }
         .status-done { background: #d1ecf1; color: #0c5460; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
@@ -333,9 +334,9 @@
                 <div class="card-title">Задания для обработки</div>
                 <div class="filter-controls">
                     <select id="statusFilter" onchange="filterTasks()">
-                        <option value="all">Все статусы</option>
-                        <option value="work" selected>В работе</option>
-                        <option value="new">Новые</option>
+                        <option value="all" selected>Все статусы</option>
+                        <option value="work">В работе</option>
+                        <option value="send">Отправленные</option>
                         <option value="done">Выполненные</option>
                     </select>
                     <button class="btn btn-success" onclick="refreshTasks()">
@@ -521,6 +522,7 @@
                 let statusText = '';
                 switch(task.status) {
                     case 'new': statusClass = 'status-new'; statusText = 'Новый'; break;
+                    case 'send': statusClass = 'status-send'; statusText = 'Отправлен'; break;
                     case 'work': statusClass = 'status-work'; statusText = 'В работе'; break;
                     case 'done': statusClass = 'status-done'; statusText = 'Выполнен'; break;
                     case 'cancelled': statusClass = 'status-cancelled'; statusText = 'Отменен'; break;
@@ -659,6 +661,11 @@
                 showNotification('Выберите хотя бы одного сотрудника', 'error');
                 return;
             }
+            if (selectedEmployees.filter(emp=>emp.status=='busy').length>0) {
+                showNotification('Все сотрудники должны быть свободными', 'error');
+                return;
+            }
+            console.log(selectedEmployees)
             
             const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
             const taskIndex = tasks.findIndex(t => t.id === currentTaskId);
@@ -666,7 +673,7 @@
             
             if (taskIndex !== -1) {
                 // Обновляем статус задания
-                tasks[taskIndex].status = 'done';
+                tasks[taskIndex].status = 'work';
                 tasks[taskIndex].assignedEmployees = selectedEmployees;
                 
                 // Добавляем запись в историю
@@ -793,7 +800,7 @@
         function completeTask(taskId) {
             const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
             const taskIndex = tasks.findIndex(t => t.id === taskId);
-            
+            const employees = JSON.parse(localStorage.getItem('employees') || '[]');
             if (taskIndex !== -1) {
                 tasks[taskIndex].status = 'done';
                 tasks[taskIndex].history.push({
@@ -805,6 +812,13 @@
                 
                 localStorage.setItem('tasks', JSON.stringify(tasks));
                 showNotification('Задание отмечено как выполненное!');
+                tasks[taskIndex].assignedEmployees.forEach(empId => {
+                    const empIndex = employees.findIndex(emp => emp.id === empId);
+                    if (empIndex !== -1) {
+                        employees[empIndex].status = 'available';
+                    }
+                });
+                localStorage.setItem('employees', JSON.stringify(employees));
                 loadTasks();
             }
         }
@@ -863,6 +877,7 @@
         function getStatusText(status) {
             switch(status) {
                 case 'new': return 'Новый';
+                case 'send': return 'Отправлен';
                 case 'work': return 'В работе';
                 case 'done': return 'Выполнен';
                 case 'cancelled': return 'Отменен';
