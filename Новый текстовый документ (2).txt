@@ -1,0 +1,66 @@
+
+CREATE TABLE TaskStatus (
+status_id SERIAL PRIMARY KEY,
+status_name VARCHAR(50)
+);
+CREATE TABLE StoreManagers (
+store_manager_id SERIAL PRIMARY KEY,
+full_name VARCHAR(50),
+contact_phone VARCHAR(50)
+);
+CREATE TABLE OfficeManagers (
+office_manager_id SERIAL PRIMARY KEY,
+full_name VARCHAR(50),
+contact_phone VARCHAR(50)
+);
+CREATE TABLE HRSpecialists (
+hr_specialist_id SERIAL PRIMARY KEY,
+full_name VARCHAR(50),
+contact_phone VARCHAR(50)
+);
+
+CREATE TABLE Tasks (
+task_id SERIAL PRIMARY KEY,
+title VARCHAR(50),
+decription VARCHAR(50),
+required_specialization VARCHAR(50),
+start_date DATE,
+end_date DATE,
+status_id INTEGER REFERENCES TaskStatus(status_id),
+store_manager_id INTEGER REFERENCES StoreManagers(store_manager_id),
+office_manager_id INTEGER REFERENCES OfficeManagers(office_manager_id),
+hr_request_id INTEGER REFERENCES HRSpecialists(hr_specialist_id)
+);
+
+CREATE TABLE SKills (
+skill_id SERIAL PRIMARY KEY,
+skill_name VARCHAR(50)
+);
+
+CREATE TABLE Specialists (
+specialist_id SERIAL PRIMARY KEY,
+full_name VARCHAR(50),
+contact_phone VARCHAR(50),
+email VARCHAR(50),
+skill_id INTEGER REFERENCES Skills(skill_id),
+contract_number VARCHAR(50),
+contract_date DATE,
+is_active BOOL
+);
+
+CREATE TABLE HHRequests (
+task_id SERIAL PRIMARY KEY,
+request_detalis VARCHAR(255),
+status VARCHAR(50),
+create_at DATE,
+office_manager_id INTEGER REFERENCES OfficeManagers(office_manager_id),
+hr_request_id INTEGER REFERENCES HRSpecialists(hr_specialist_id)
+);
+
+CREATE TABLE Assignments (
+assignment_id SERIAL PRIMARY KEY,
+task_id INTEGER REFERENCES Tasks(task_id),
+specialist_id INTEGER REFERENCES Specialists(specialist_id),
+assigned_at DATE,
+office_manager_id INTEGER REFERENCES OfficeManagers(office_manager_id)
+);
